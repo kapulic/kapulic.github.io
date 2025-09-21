@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="hr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi Kapula - Postanite Vozač za Uber i Bolt</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Pridružite se Taxi Kapuli i postanite vozač za Uber i Bolt. Nudimo fleksibilno radno vrijeme, visoku zaradu i punu podršku. Prijavite se danas!">
+    <meta name="keywords" content="posao vozača, uber vozač, bolt vozač, taksi, posao, vozač, zarada, fleksibilno radno vrijeme, Zagreb, Split, Rijeka">
+    <meta name="author" content="Taxi Kapula">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+        }
+
+        .form-message {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        .form-message.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-200">
+
+    <!-- Header & Navigation -->
+    <header class="bg-gray-900 shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-2 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-yellow-500 flex items-center">
+                <i class="fa-solid fa-taxi text-white mr-2"></i>
+                Taxi Kapula
+            </a>
+            <div class="hidden md:flex space-x-8 text-gray-400 font-medium">
+                <a href="#benefits" class="hover:text-yellow-500 transition-colors">Prednosti</a>
+                <a href="#how-it-works" class="hover:text-yellow-500 transition-colors">Kako radi</a>
+                <a href="#testimonials" class="hover:text-yellow-500 transition-colors">Iskustva</a>
+                <a href="#apply" class="hover:text-yellow-500 transition-colors">Prijavite se</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-400 hover:text-yellow-500 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900 shadow-md">
+            <a href="#benefits" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Prednosti</a>
+            <a href="#how-it-works" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Kako radi</a>
+            <a href="#testimonials" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Iskustva</a>
+            <a href="#apply" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Prijavite se</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- Hero Section -->
+    <section id="hero" class="bg-gray-950 text-white py-16 md:py-24 relative overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://cdn.pixabay.com/photo/2025/07/16/09/08/car-9717482_1280.jpg');"></div>
+            <div class="absolute inset-0 bg-gray-900 opacity-80"></div>
+        </div>
+        <div class="container mx-auto px-6 flex flex-col items-center relative z-10 text-center">
+            <div class="w-full max-w-3xl">
+                <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+                    Postanite Vozač za <span class="text-yellow-500">Uber & Bolt</span> s Nama.
+                </h1>
+                <p class="text-lg md:text-xl font-medium mb-8 text-gray-300">
+                    Pridružite se našem timu i preuzmite kontrolu nad svojom zaradom. Fleksibilno. Pouzdano. Isplativo.
+                </p>
+                <a href="#apply" class="bg-yellow-500 text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-600 transition-colors transform hover:scale-105 inline-block">Prijavite se odmah</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="py-16 bg-gray-800">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-12">Zašto voziti s nama?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
+                    <i class="fa-solid fa-calendar-alt text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Fleksibilno radno vrijeme</h3>
+                    <p class="text-gray-300">Vi birate kada i koliko ćete raditi. Prilagodite vožnju svom rasporedu, a ne obrnuto.</p>
+                </div>
+                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
+                    <i class="fa-solid fa-money-bill-wave text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Visoka zarada</h3>
+                    <p class="text-gray-300">Naša provizija je niska, što znači da veći dio zarade ostaje vama. Transparentan i pošten model.</p>
+                </div>
+                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
+                    <i class="fa-solid fa-headset text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Potpuna podrška</h3>
+                    <p class="text-gray-300">Pružamo obuku, pravnu i administrativnu podršku. Fokusirajte se na vožnju, mi brinemo za ostalo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section id="how-it-works" class="py-16 bg-gray-900 text-center">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-12">Jednostavna prijava u 3 koraka</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">1</div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Ispunite prijavu</h3>
+                    <p class="text-gray-300">Ispunite naš brzi online obrazac s osnovnim podacima i dokumentima.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">2</div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Aktivacija</h3>
+                    <p class="text-gray-300">Pomoći ćemo vam s registracijom na platformama Uber i Bolt i obaviti sve administrativne poslove.</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">3</div>
+                    <h3 class="text-xl font-bold mb-2 text-white">Počnite zarađivati</h3>
+                    <p class="text-gray-300">Spremni ste za vožnju! Jednostavno se prijavite u aplikaciju i krenite.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Call to Action / Application Form -->
+    <section id="apply" class="py-16 bg-gray-800 text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Spremni ste? Prijavite se odmah!</h2>
+            <p class="text-lg md:text-xl font-medium mb-8">
+                Pošaljite nam svoje podatke i započnite karijeru vozača uz podršku profesionalnog tima.
+            </p>
+
+            <form id="driver-application-form" class="bg-gray-900 p-8 md:p-12 rounded-xl shadow-2xl max-w-2xl mx-auto text-white">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium mb-2 text-left">Puno ime</label>
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium mb-2 text-left">Adresa e-pošte</label>
+                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium mb-2 text-left">Broj telefona</label>
+                        <input type="tel" id="phone" name="phone" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-sm font-medium mb-2 text-left">Poruka (opcionalno)</label>
+                        <textarea id="message" name="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"></textarea>
+                    </div>
+                </div>
+                <div id="form-message" class="text-center text-green-400 font-semibold mb-4 form-message"></div>
+                <button type="submit" class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg shadow-lg hover:bg-yellow-600 transition-colors transform hover:scale-105">Pošalji prijavu</button>
+            </form>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-300 py-8">
+    <div class="container mx-auto px-6 text-center">
+        <div class="flex justify-center space-x-6 mb-4">
+            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-facebook-f text-xl"></i></a>
+            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-twitter text-xl"></i></a>
+            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-instagram text-xl"></i></a>
+        </div>
+        <p class="text-sm">&copy; 2024 Taxi Kapula. Sva prava pridržana.</p>
+    </div>
+</footer>
+
+<!-- Scroll to Top Button -->
+<button id="scroll-to-top" class="bg-yellow-500 text-gray-900 p-3 rounded-full shadow-lg hover:bg-yellow-600 transition-colors scroll-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const driverForm = document.getElementById('driver-application-form');
+        const formMessage = document.getElementById('form-message');
+        const scrollToTopBtn = document.getElementById('scroll-to-top');
+
+        // Toggle mobile menu visibility
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Handle driver application form submission
+        driverForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(driverForm);
+            const data = Object.fromEntries(formData.entries());
+            console.log('Driver application submitted:', data);
+
+            formMessage.textContent = 'Vaša prijava je uspješno poslana! Uskoro ćemo vas kontaktirati.';
+            formMessage.classList.add('show');
+            driverForm.reset();
+
+            setTimeout(() => {
+                formMessage.classList.remove('show');
+            }, 5000);
+        });
+
+        // Show/hide scroll-to-top button
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
+
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Close mobile menu when a link is clicked
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    });
+</script>
+</body>
+</html>
