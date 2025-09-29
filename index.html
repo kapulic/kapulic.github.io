@@ -1,255 +1,576 @@
-<!DOCTYPE html>
-<html lang="hr" class="scroll-smooth">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taxi Kapula - Postanite Vozač za Uber i Bolt</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Siege Defense — Mobile HUD (Unique Unit Shapes + Rebalanced Enemies)</title>
+  <style>
+    :root {
+      /* Lighter, higher-contrast palette */
+      --bg: #0f172a;         /* slate-900 → deep but readable */
+      --panel: #1e293b;      /* slate-800 */
+      --panel-2:#263447;     /* custom mid-slate */
+      --text:#f8fafc;        /* almost white */
+      --muted:#cbd5e1;       /* slate-300 */
+      --accent:#38bdf8;      /* sky-400 */
+      --border:#334155;      /* slate-700 */
+      --good:#10b981;        /* emerald-500 */
+      --warn:#ef4444;        /* red-500 */
+      --gold:#f59e0b;        /* amber-500 */
+      --hudH: 56px; 
+      --boardH: calc(100vh - var(--hudH) - var(--ctrlH)); /* board fills to bottom; controls sit on top of it */
+      --ctrlH: 56px;          /* height of bottom control bar */
+      --btnH: 46px; --radius: 14px;
+    }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
+    .wrap { min-height: 100%; display: flex; flex-direction: column; align-items: center; }
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Pridružite se Taxi Kapuli i postanite vozač za Uber i Bolt. Nudimo fleksibilno radno vrijeme, visoku zaradu i punu podršku. Prijavite se danas!">
-    <meta name="keywords" content="posao vozača, uber vozač, bolt vozač, taksi, posao, vozač, zarada, fleksibilno radno vrijeme, Zagreb, Split, Rijeka">
-    <meta name="author" content="Taxi Kapula">
+    .hud { position: sticky; top: 0; z-index: 20; width: 100%; max-width: 520px; height: var(--hudH);
+           display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px;
+           background: linear-gradient(180deg, #1e293b, #0f172a); border-bottom: 1px solid var(--border);
+           padding: 8px 10px; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+    .meters { display: flex; gap: 8px; align-items: center; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); background: var(--panel-2); }
+    .badge .ico { font-size: 16px; line-height: 1; }
+    .hudBtns { display: inline-flex; gap: 6px; }
+    .iconBtn { display:inline-flex; align-items:center; justify-content:center; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel-2); font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.25); color: var(--text); font-weight:700; }
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    .board { position: relative; width: 100%; max-width: 520px; height: var(--boardH); margin: 8px 10px 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,.35); background:#0b1220; }
+    canvas { width: 100%; height: 100%; display:block; }
+    .overlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.35); font-weight:800; font-size:32px; letter-spacing:1px; }
+    .overlay.show { display:flex; }
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .scroll-to-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 1000;
-        }
-
-        .scroll-to-top.visible {
-            opacity: 1;
-        }
-
-        .form-message {
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-            transform: translateY(20px);
-            opacity: 0;
-        }
-
-        .form-message.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    </style>
-</head>
-<body class="bg-gray-950 text-gray-200">
-
-    <!-- Header & Navigation -->
-    <header class="bg-gray-900 shadow-lg sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-2 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-yellow-500 flex items-center">
-                <i class="fa-solid fa-taxi text-white mr-2"></i>
-                Taxi Kapula
-            </a>
-            <div class="hidden md:flex space-x-8 text-gray-400 font-medium">
-                <a href="#benefits" class="hover:text-yellow-500 transition-colors">Prednosti</a>
-                <a href="#how-it-works" class="hover:text-yellow-500 transition-colors">Podrška</a>
-                <a href="#testimonials" class="hover:text-yellow-500 transition-colors">Iskustva</a>
-                <a href="#apply" class="hover:text-yellow-500 transition-colors">Prijavite se</a>
-            </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-gray-400 hover:text-yellow-500 focus:outline-none">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
-            </div>
-        </nav>
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-gray-900 shadow-md">
-            <a href="#benefits" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Prednosti</a>
-            <a href="#how-it-works" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Podrška</a>
-            <a href="#testimonials" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Iskustva</a>
-            <a href="#apply" class="block py-3 px-6 text-gray-400 hover:bg-gray-800 transition-colors">Prijavite se</a>
-        </div>
-    </div>
-</header>
-
-<main>
-    <!-- Hero Section -->
-    <section id="hero" class="bg-gray-950 text-white py-16 md:py-24 relative overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://cdn.pixabay.com/photo/2025/07/16/09/08/car-9717482_1280.jpg');"></div>
-            <div class="absolute inset-0 bg-gray-900 opacity-80"></div>
-        </div>
-        <div class="container mx-auto px-6 flex flex-col items-center relative z-10 text-center">
-            <div class="w-full max-w-3xl">
-                <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
-                    Vozite s nama za <span class="text-yellow-500">Uber & Bolt</span>
-                </h1>
-                <p class="text-lg md:text-xl font-medium mb-8 text-gray-300">
-                    Pridružite se našem timu i preuzmite kontrolu nad svojom zaradom. Fleksibilno. Pouzdano. Isplativo.
-                </p>
-                <a href="#apply" class="bg-yellow-500 text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-yellow-600 transition-colors transform hover:scale-105 inline-block">Prijavite se odmah</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section id="benefits" class="py-16 bg-gray-800">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-12">Zašto voziti s nama?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
-                    <i class="fa-solid fa-calendar-alt text-4xl text-yellow-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Fleksibilno radno vrijeme</h3>
-                    <p class="text-gray-300">Vi birate kada i koliko ćete raditi. Prilagodite vožnju svom rasporedu, a ne obrnuto.</p>
-                </div>
-                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
-                    <i class="fa-solid fa-money-bill-wave text-4xl text-yellow-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Visoka zarada</h3>
-                    <p class="text-gray-300">Naša provizija je niska, što znači da veći dio zarade ostaje vama. Transparentan i pošten model.</p>
-                </div>
-                <div class="bg-gray-900 p-8 rounded-xl shadow-lg transform transition-transform hover:scale-105">
-                    <i class="fa-solid fa-headset text-4xl text-yellow-500 mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">Potpuna podrška</h3>
-                    <p class="text-gray-300">Pružamo obuku, pravnu i administrativnu podršku. Fokusirajte se na vožnju, mi brinemo za ostalo.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How it Works Section -->
-    <section id="how-it-works" class="py-16 bg-gray-900 text-center">
-        <div class="container mx-auto px-6">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-12">Jednostavna prijava u 3 koraka</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">1</div>
-                    <h3 class="text-xl font-bold mb-2 text-white">Ispunite prijavu</h3>
-                    <p class="text-gray-300">Ispunite naš brzi online obrazac s osnovnim podacima i dokumentima.</p>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">2</div>
-                    <h3 class="text-xl font-bold mb-2 text-white">Aktivacija</h3>
-                    <p class="text-gray-300">Pomoći ćemo vam s registracijom na platformama Uber i Bolt i obaviti sve administrativne poslove.</p>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-yellow-500 text-gray-900 rounded-full flex items-center justify-center text-2xl font-bold mb-4 transform transition-transform hover:scale-110">3</div>
-                    <h3 class="text-xl font-bold mb-2 text-white">Počnite zarađivati</h3>
-                    <p class="text-gray-300">Spremni ste za vožnju! Jednostavno se prijavite u aplikaciju i krenite.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    /* bottom controls now docked inside the board */
+    .ctrlBar { position: static; width: 100%; max-width: 520px; height: var(--ctrlH); display:flex; gap:8px; align-items:center; justify-content:space-between; margin: 8px auto; padding:8px 10px; background: var(--panel); border:1px solid var(--border); border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+    .fab { flex: 1 1 0; display:flex; align-items:center; justify-content:center; gap:8px; min-height: var(--btnH); font-weight: 700; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); }
+    .fab.primary { background: var(--accent); border-color: #4f46e5; }
     
-    <!-- Call to Action / Application Form -->
-    <section id="apply" class="py-16 bg-gray-800 text-white">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">Spremni ste? Prijavite se odmah!</h2>
-            <p class="text-lg md:text-xl font-medium mb-8">
-                Pošaljite nam svoje podatke i započnite karijeru vozača uz podršku profesionalnog tima.
-            </p>
 
-            <form id="driver-application-form" class="bg-gray-900 p-8 md:p-12 rounded-xl shadow-2xl max-w-2xl mx-auto text-white">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium mb-2 text-left">Puno ime</label>
-                        <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium mb-2 text-left">Adresa e-pošte</label>
-                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
-                    </div>
-                    <div>
-                        <label for="phone" class="block text-sm font-medium mb-2 text-left">Broj telefona</label>
-                        <input type="tel" id="phone" name="phone" required class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors">
-                    </div>
-                    <div>
-                        <label for="message" class="block text-sm font-medium mb-2 text-left">Poruka (opcionalno)</label>
-                        <textarea id="message" name="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-colors"></textarea>
-                    </div>
-                </div>
-                <div id="form-message" class="text-center text-green-400 font-semibold mb-4 form-message"></div>
-                <button type="submit" class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg shadow-lg hover:bg-yellow-600 transition-colors transform hover:scale-105">Pošalji prijavu</button>
-            </form>
-        </div>
-    </section>
-</main>
+    .sheet { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--ctrlH) + 10px); width: min(480px, calc(100% - 20px)); background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px; display:none; z-index: 30; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+    .sheet.show { display:block; }
+    .unit-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .unit { display:flex; flex-direction:column; align-items:center; gap:6px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-2); }
+    .dot { width:14px; height:14px; border-radius: 50%; display:inline-block; }
+    .unit b { font-size: 12px; }
+    .unit small { font-size: 11px; opacity:.8 }
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-gray-300 py-8">
-    <div class="container mx-auto px-6 text-center">
-        <div class="flex justify-center space-x-6 mb-4">
-            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-facebook-f text-xl"></i></a>
-            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-twitter text-xl"></i></a>
-            <a href="#" class="hover:text-yellow-500 transition-colors"><i class="fa-brands fa-instagram text-xl"></i></a>
-        </div>
-        <p class="text-sm">&copy; 2024 Taxi Kapula. Sva prava pridržana.</p>
+    .defeatOverlay { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); color:white; font-weight:800; font-size:32px; text-align:center; gap:20px; }
+    .defeatOverlay.show { display:flex; }
+    .defeatOverlay button { padding:12px 28px; font-size:18px; font-weight:700; border-radius:12px; border:1px solid var(--border); background:var(--accent); color:white; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hud">
+      <div class="meters">
+        <span class="badge"><span class="ico">🪙</span><span id="gold">200</span></span>
+        <span class="badge"><span class="ico">❤️</span><span id="hp">20</span></span>
+        <span class="badge"><span class="ico">🌊</span>W<span id="waveN">1</span></span>
+      </div>
+      <div class="hudBtns">
+        <button id="btn-pause" class="iconBtn" title="Pause/Resume (P)">⏸️</button>
+        <button id="btn-speed" class="iconBtn" title="Speed 1x→4x (X)">🕒</button>
+        <button id="btn-restart" class="iconBtn" title="Restart (R)">↻</button>
+      </div>
     </div>
-</footer>
 
-<!-- Scroll to Top Button -->
-<button id="scroll-to-top" class="bg-yellow-500 text-gray-900 p-3 rounded-full shadow-lg hover:bg-yellow-600 transition-colors scroll-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-</button>
+    <div class="board">
+      <div id="overlay" class="overlay">PAUSED</div>
+      <canvas id="game"></canvas>
+      <!-- Unit picker pops OVER the battlefield -->
+      
+      </div>
+      
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const driverForm = document.getElementById('driver-application-form');
-        const formMessage = document.getElementById('form-message');
-        const scrollToTopBtn = document.getElementById('scroll-to-top');
+    <div class="ctrlBar">
+        <button id="fab-deploy" class="fab">➕ <canvas id="deployIcon" width="28" height="28" style="width:20px;height:20px;margin-left:6px;border-radius:4px;background:transparent"></canvas><span id="deployLabel">—</span></button>
+        <button id="fab-start" class="fab primary">▶ Start</button>
+      </div>
+    </div>
 
-        // Toggle mobile menu visibility
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+    <div id="defeatOverlay" class="defeatOverlay">
+      <div>Your Castle is Destroyed</div>
+      <button onclick="restart()">Restart</button>
+    </div>
 
-        // Handle driver application form submission
-        driverForm.addEventListener('submit', (event) => {
-            event.preventDefault();
+    
 
-            const formData = new FormData(driverForm);
-            const data = Object.fromEntries(formData.entries());
-            console.log('Driver application submitted:', data);
+    <div id="sheet" class="sheet" aria-modal="true">
+      <div class="unit-grid">
+        <div class="unit" data-unit="archer"><span class="dot" style="background:#16a34a"></span><b>Archer</b><small>50g</small></div>
+        <div class="unit" data-unit="mage"><span class="dot" style="background:#7c3aed"></span><b>Mage</b><small>80g</small></div>
+        <div class="unit" data-unit="catapult"><span class="dot" style="background:#f59e0b"></span><b>Catapult</b><small>120g</small></div>
+        <div class="unit" data-unit="warrior"><span class="dot" style="background:#eab308"></span><b>Warrior</b><small>70g</small></div>
+      </div>
+    </div>
+  </div>
 
-            formMessage.textContent = 'Vaša prijava je uspješno poslana! Uskoro ćemo vas kontaktirati.';
-            formMessage.classList.add('show');
-            driverForm.reset();
+  <script>
+  // ====== Responsive Canvas ======
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  function sizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', sizeCanvas); setTimeout(sizeCanvas, 0);
 
-            setTimeout(() => {
-                formMessage.classList.remove('show');
-            }, 5000);
-        });
+  // World dims in CSS px
+  function getWorldDims(){
+    const W = canvas.clientWidth || 360;
+    const H = canvas.clientHeight || 560;
+    return { W, H };
+  }
+  const LANES_COUNT = 6; // increased from 5 to 6 lanes
+  function makeLanesX(W){
+    // Distribute lanes evenly with margins so outer lanes are near the walls
+    return Array.from({length: LANES_COUNT}, (_,i)=> Math.round(W * ((i+1)/(LANES_COUNT+1))));
+  }
 
-        // Show/hide scroll-to-top button
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                scrollToTopBtn.classList.add('visible');
-            } else {
-                scrollToTopBtn.classList.remove('visible');
-            }
-        });
+  const PATH_TOP_PAD = 56, PATH_BOT_PAD = 54;
+  // Global pace: make default 1x feel 50% faster
+  const BASE_SPEED = 2.25; // another 50% faster (1.5 * 1.5)
+  const START_GOLD = 200, CASTLE_HP_START = 20;
 
-        // Scroll to top functionality
-        scrollToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+  // ====== Units & Enemies ======
+  const UNIT_DEFS = {
+    archer:   { name: 'Archer',   cost: 50, range: 160, damage: 10, fireRate: 0.9, projectileSpeed: 400, color: '#16a34a', hp: 60,  blockRange: 18 },
+    mage:     { name: 'Mage',     cost: 80, range: 140, damage: 18, fireRate: 0.7, projectileSpeed: 380, color: '#7c3aed', hp: 70,  blockRange: 18 },
+    catapult: { name: 'Catapult', cost: 120, range: 190, damage: 28, fireRate: 0.45, projectileSpeed: 300, color: '#f59e0b', splash:60, hp: 100, blockRange: 20 },
+    warrior:  { name: 'Warrior',  cost: 70, color: '#eab308', hp: 170, armor: 0.20, meleeDamage: 14, meleeRate: 1.0, blockRange: 24 }
+  };
 
-        // Close mobile menu when a link is clicked
-        const mobileLinks = mobileMenu.querySelectorAll('a');
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
-    });
-</script>
+  // Rebalanced enemies: slower & weaker overall
+  const ENEMY_DEFS = {
+    grunt:  { name: 'Grunt',  hp: 28,  speed: 28, bounty: 10, color:'#ef4444', atk: 4,  atkRate: 0.8 },
+    runner: { name: 'Runner', hp: 20,  speed: 60, bounty: 12, color:'#22d3ee', atk: 3,  atkRate: 1.0 },
+    tank:   { name: 'Tank',   hp: 80,  speed: 18, bounty: 25, color:'#9ca3af', atk: 7,  atkRate: 0.6 },
+  };
+
+  // Size function: stronger & slower → larger shapes
+  function enemySizeByStats(type){
+    const ed = ENEMY_DEFS[type];
+    // normalize hp and inverse speed
+    const hpScore = ed.hp / 80; // tank baseline
+    const spScore = (60 - ed.speed) / 60; // slower → higher
+    const base = 20; // minimum size
+    const extra = Math.max(0, hpScore*12 + spScore*10); // up to +22
+    return Math.round(base + extra); // ~20..42 px
+  }
+
+  // ====== State ======
+  const baseState = () => ({
+    gold: START_GOLD,
+    castleHP: CASTLE_HP_START,
+    wave: 0,
+    placing: null,
+    sellMode: false,
+    ghost: null, // {x,y,lane,valid}
+    units: [], // {x,y,lane,type,cd,hp}
+    enemies: [], // {x,y,lane,type,hp,speed,bounty,color,atk,atkRate,atkCd,size}
+    projectiles: [], // {x,y,vx,vy,damage,lane,splash,color}
+    spawning: null,
+    lastT: 0,
+    paused: false,
+    speed: 1,
+    cooldownEnd: null, // epoch seconds when next wave auto-starts
+  });
+  let state = baseState();
+
+  // ====== Helpers ======
+  const randChoice = (arr) => arr[Math.floor(Math.random()*arr.length)];
+  const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+  const nearestLaneX = (x, lanes) => lanes.reduce((a,b)=> Math.abs(x-a) < Math.abs(x-b) ? a : b);
+
+  // ====== DOM ======
+  const goldEl = document.getElementById('gold');
+  const hpEl = document.getElementById('hp');
+  const waveNEl = document.getElementById('waveN');
+  const defeatEl = document.getElementById('defeat');
+  const overlayEl = document.getElementById('overlay');
+
+  const pauseBtn = document.getElementById('btn-pause');
+  const speedBtn = document.getElementById('btn-speed');
+  const restartBtn = document.getElementById('btn-restart');
+
+  const deployFab = document.getElementById('fab-deploy');
+  const deployLabel = document.getElementById('deployLabel');
+  const startFab = document.getElementById('fab-start');
+  const sheet = document.getElementById('sheet');
+  const deployIcon = document.getElementById('deployIcon');
+
+  function setPlacing(type){ state.placing = type; state.sellMode = false; updateUI(); drawDeployIcon(); }
+  function updateUI(){
+    deployLabel.textContent = state.placing ? UNIT_DEFS[state.placing].name : '—';
+    pauseBtn.textContent = state.paused ? '▶' : '⏸️';
+    speedBtn.textContent = state.speed + 'x';
+    // keep deploy icon in sync
+    drawDeployIcon();
+  }
+
+  deployFab.addEventListener('click', ()=>{ sheet.classList.toggle('show'); });
+  sheet.addEventListener('click', (e)=>{
+    const el = e.target.closest('.unit'); if (!el) return; const t = el.getAttribute('data-unit');
+    setPlacing(t); sheet.classList.remove('show');
+  });
+
+  startFab.onclick = manualStartWave;
+  pauseBtn.onclick = togglePause;
+  speedBtn.onclick = cycleSpeed;
+  restartBtn.onclick = restart;
+
+  window.addEventListener('keydown', (e)=>{
+    if (e.key==='1') setPlacing('archer');
+    if (e.key==='2') setPlacing('mage');
+    if (e.key==='3') setPlacing('catapult');
+    if (e.key==='4') setPlacing('warrior');
+    if (e.key.toLowerCase()==='p') togglePause();
+    if (e.key.toLowerCase()==='x') cycleSpeed();
+    if (e.key.toLowerCase()==='r') restart();
+  });
+
+  canvas.addEventListener('click', (e)=>{
+    if (!state.placing) return;
+    const pos = getPointerPos(e);
+    const snap = getSnappedPlacement(pos.x, pos.y);
+    const def = UNIT_DEFS[state.placing];
+    if (!snap.valid || state.gold < def.cost) return;
+    const unit = { x:snap.x, y:snap.y, lane: snap.lane, type: state.placing, cd: 0, hp: def.hp || 60 };
+    state.units.push(unit); state.gold -= def.cost; goldEl.textContent = state.gold; updateUI();
+  });
+  // Ghost tracking (pointer events; cheap — no work each frame)
+  canvas.addEventListener('pointermove', (e)=>{ if (!state.placing) { state.ghost=null; return; } const p = getPointerPos(e); state.ghost = getSnappedPlacement(p.x, p.y); });
+  canvas.addEventListener('pointerleave', ()=>{ state.ghost = null; });
+  function getPointerPos(e){ const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left), y: (e.clientY - r.top) }; }
+  function getSnappedPlacement(x, y){
+    const { W, H } = getWorldDims(); const LANES_X = makeLanesX(W);
+    const PATH_START_Y = PATH_TOP_PAD; const PATH_END_Y = H - PATH_BOT_PAD;
+    const lane = nearestLaneX(x, LANES_X);
+    const xs = lane; const ys = Math.max(PATH_START_Y + 30, Math.min(PATH_END_Y - 26, y)); // allow placement close to the bottom wall
+    const overlap = state.units.some(u => dist({x:xs,y:ys}, u) < 38);
+    const canAfford = state.placing ? (state.gold >= (UNIT_DEFS[state.placing].cost||0)) : false;
+    return { x: xs, y: ys, lane, valid: (!overlap && canAfford) };
+  }
+
+  function startWave(){
+    if (state.spawning || state.paused) return;
+    const nextWave = state.wave + 1; state.wave = nextWave;
+    state.cooldownEnd = null; // clear any pending auto-start
+    waveNEl.textContent = nextWave; // update display only when new wave starts
+    const { W } = getWorldDims(); const LANES_X = makeLanesX(W);
+    const params = getWaveParams(nextWave);
+    const script = [];
+    for (let i=0;i<params.count;i++){
+      const lane = randChoice(LANES_X);
+      const type = pickEnemyType(params.mix);
+      const at = i * params.spacing;
+      script.push({ at, lane, type });
+    }
+    state.spawning = { script, startTime: performance.now()/1000, i:0 };
+  }
+
+  function togglePause(){ state.paused = !state.paused; overlayEl.classList.toggle('show', state.paused); updateUI(); }
+  function restart(){
+    // reset state
+    state = baseState();
+    // reset HUD
+    goldEl.textContent = state.gold;
+    hpEl.textContent = state.castleHP;
+    waveNEl.textContent = 1;
+    // hide overlays
+    document.getElementById('defeatOverlay')?.classList.remove('show');
+    overlayEl.classList.remove('show');
+    // refresh UI
+    updateUI();
+    // resume the game loop (it stops on defeat)
+    state.lastT = 0;
+    requestAnimationFrame(loop);
+  }
+
+  function cycleSpeed(){
+    const steps = [1,2,3,4];
+    const i = steps.indexOf(state.speed);
+    state.speed = steps[(i+1) % steps.length];
+    updateUI();
+  }
+
+  function eligibleForNextWave(){
+    return !state.spawning && state.enemies.length===0;
+  }
+  function manualStartWave(){
+    // allow early start only when between waves
+    if (!eligibleForNextWave()) return;
+    startWave();
+  }
+  function updateStartLabel(){
+    if (!startFab) return;
+    if (eligibleForNextWave()){
+      if (state.cooldownEnd){
+        const now = performance.now()/1000;
+        const rem = Math.max(0, state.cooldownEnd - now);
+        startFab.textContent = `▶ Start (${rem.toFixed(1)}s)`;
+      } else {
+        startFab.textContent = '▶ Start';
+      }
+      startFab.disabled = false;
+    } else {
+      startFab.textContent = 'Wave running…';
+      startFab.disabled = true;
+    }
+  }
+
+  function loop(t){
+    if (!state.lastT) state.lastT = t;
+    let dt = Math.min((t - state.lastT)/1000, 0.033); state.lastT = t;
+    if (!state.paused){ dt *= state.speed * BASE_SPEED; update(dt); }
+    draw();
+    if (state.castleHP <= 0){ document.getElementById('defeatOverlay').classList.add('show'); return; }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  function update(dt){
+    const now = performance.now()/1000;
+    const { W, H } = getWorldDims();
+    const PATH_START_Y = PATH_TOP_PAD; const PATH_END_Y = H - PATH_BOT_PAD;
+
+    if (state.spawning){
+      const now = performance.now()/1000; let i = state.spawning.i;
+      while (i < state.spawning.script.length && (now - state.spawning.startTime) >= state.spawning.script[i].at){
+        const item = state.spawning.script[i]; const ed = ENEMY_DEFS[item.type];
+        const wp = getWaveParams(state.wave);
+        state.enemies.push({ x: item.lane, y: PATH_START_Y, lane: item.lane, type: item.type,
+          hp: Math.floor(ed.hp * wp.hpScale), speed: ed.speed * wp.spdScale,
+          bounty: ed.bounty + Math.floor(state.wave * 0.5), color: ed.color, atk: ed.atk,
+          atkRate: ed.atkRate, atkCd: 0, size: enemySizeByStats(item.type) });
+        i++;
+      }
+      state.spawning.i = i; if (i >= state.spawning.script.length && state.enemies.length === 0){ state.spawning = null; }
+    }
+
+    if (state.enemies.length){
+      const kept = [];
+      for (const e of state.enemies){
+        // Any friendly unit can block now (same lane, in front, within that unit's blockRange)
+        const blockers = state.units
+          .filter(u => u.lane===e.lane && u.y >= e.y && (u.y - e.y) <= (UNIT_DEFS[u.type].blockRange || 18))
+          .sort((a,b)=> a.y - b.y); // closest blocker ahead
+        const blocker = blockers[0];
+        if (blocker){
+          // enemy damages the blocking unit on contact
+          e.atkCd = Math.max(0, e.atkCd - dt);
+          if (e.atkCd === 0){
+            const armor = UNIT_DEFS[blocker.type].armor || 0;
+            const dmg = e.atk * (1 - armor);
+            blocker.hp -= dmg;
+            e.atkCd = 1 / e.atkRate;
+          }
+          if (blocker.hp <= 0){
+            const idx = state.units.indexOf(blocker); if (idx >= 0) state.units.splice(idx,1);
+          }
+          kept.push(e);
+        } else {
+          // move downwards
+          const ny = e.y + e.speed * dt; 
+          if (ny >= PATH_END_Y){ 
+            state.castleHP = Math.max(0, state.castleHP - 1); hpEl.textContent = state.castleHP; 
+          } else { 
+            e.y = ny; kept.push(e); 
+          }
+        }
+      }
+      state.enemies = kept;
+    }
+
+    // handle inter-wave cooldown and auto-start
+    if (eligibleForNextWave()){
+      if (!state.cooldownEnd && state.wave > 0){
+        state.cooldownEnd = now + 3; // 3s between waves
+      }
+      if (state.cooldownEnd && now >= state.cooldownEnd){
+        startWave();
+      }
+    } else {
+      // cancel countdown if a wave is active
+      state.cooldownEnd = null;
+    }
+
+    // units act (ranged can shoot across lanes using circular range)
+    if (state.units.length){
+      for (const u of state.units){
+        const ud = UNIT_DEFS[u.type];
+        u.cd = Math.max(0, (u.cd||0) - dt);
+
+        if (u.type === 'warrior'){
+          // melee vs enemy directly in front (vertical contact window, same lane)
+          const targets = state.enemies
+            .filter(e => e.lane===u.lane && (e.y - u.y) >= -2 && (e.y - u.y) <= (ud.blockRange + 2))
+            .sort((a,b)=> a.y - b.y);
+          if (targets.length && u.cd===0){
+            targets[0].hp -= ud.meleeDamage; u.cd = 1 / ud.meleeRate;
+          }
+        } else {
+          if (u.cd>0) continue;
+          // find nearest enemy in circular range (cross-lane)
+          const targets = state.enemies
+            .filter(e => Math.hypot(e.x - u.x, e.y - u.y) <= ud.range)
+            .sort((a,b)=> (Math.hypot(a.x-u.x,a.y-u.y) - Math.hypot(b.x-u.x,b.y-u.y)));
+          if (targets.length){
+            const t = targets[0]; const ang = Math.atan2(t.y - u.y, t.x - u.x); const spd = ud.projectileSpeed;
+            state.projectiles.push({ x:u.x, y:u.y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, damage:ud.damage, splash:ud.splash||0, color:ud.color });
+            u.cd = 1 / ud.fireRate;
+          }
+        }
+      }
+    }
+
+    // projectiles (movement + hits, lane-agnostic)
+    if (state.projectiles.length){
+      const alive = []; const pending = [];
+      const { W, H } = getWorldDims();
+      for (const p of state.projectiles){
+        const nx = p.x + p.vx * dt, ny = p.y + p.vy * dt;
+        if (nx < 0 || nx > W || ny < 0 || ny > H) continue;
+        let hit = null;
+        for (const e of state.enemies){
+          const r = (e.size || 26)/2;
+          if (Math.abs(e.x - nx) < r && Math.abs(e.y - ny) < r){ hit = e; break; }
+        }
+        if (hit){ pending.push({ x: hit.x, y: hit.y, dmg: p.damage, r: p.splash||0 }); }
+        else { p.x = nx; p.y = ny; alive.push(p); }
+      }
+      if (pending.length){
+        const survivors = [];
+        for (const e of state.enemies){
+          let hp = e.hp;
+          for (const d of pending){
+            const inSplash = d.r ? (Math.hypot(e.x-d.x, e.y-d.y) <= d.r)
+                                 : (Math.abs(e.x-d.x) < (e.size||26)/2 && Math.abs(e.y-d.y) < (e.size||26)/2);
+            if (inSplash) hp -= d.dmg;
+          }
+          if (hp>0){ e.hp = hp; survivors.push(e); } else { state.gold += e.bounty; }
+        }
+        state.enemies = survivors; goldEl.textContent = state.gold; updateUI();
+      }
+      state.projectiles = alive;
+    }
+  }
+
+  // --- Drawing helpers for unique friendly shapes ---
+  function drawTriangle(x,y,r,fill){
+    ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x - r*0.9, y + r*0.8); ctx.lineTo(x + r*0.9, y + r*0.8); ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  function drawDiamond(x,y,r,fill){
+    ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x - r, y); ctx.lineTo(x, y + r); ctx.lineTo(x + r, y); ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  function drawRoundRect(x,y,w,h,rad,fill){
+    const r = rad||6; ctx.beginPath(); ctx.moveTo(x-r, y-h/2); ctx.arcTo(x+w/2, y-h/2, x+w/2, y+h/2, r); ctx.arcTo(x+w/2, y+h/2, x-w/2, y+h/2, r); ctx.arcTo(x-w/2, y+h/2, x-w/2, y-h/2, r); ctx.arcTo(x-w/2, y-h/2, x+w/2, y-h/2, r); ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+  }
+  function drawShield(x,y,r,fill){
+    ctx.beginPath(); ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x + r, y - r*0.6, x + r*0.7, y);
+    ctx.quadraticCurveTo(x, y + r*1.2, x - r*0.7, y);
+    ctx.quadraticCurveTo(x - r, y - r*0.6, x, y - r);
+    ctx.fillStyle = fill; ctx.fill();
+  }
+
+  function draw(){
+    updateStartLabel();
+    const { W, H } = getWorldDims();
+    const PATH_START_Y = PATH_TOP_PAD; const PATH_END_Y = H - PATH_BOT_PAD; const LANES_X = makeLanesX(W);
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#0f172a'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#1e293b'; ctx.fillRect(0, PATH_START_Y-34, W, (PATH_END_Y - (PATH_START_Y-34))); // lane area brighter
+
+    // lanes invisible (removed grid lines)
+
+    const castleW = Math.min(110, Math.floor(W*0.32)); const castleX = Math.floor((W - castleW)/2);
+    ctx.fillStyle = '#334155'; ctx.fillRect(castleX, PATH_END_Y, castleW, 34);
+    ctx.fillStyle = '#6b7280'; ctx.fillRect(castleX + castleW/2 - 12, PATH_END_Y + 10, 24, 24);
+
+    // friendly units (unique shapes) + HP bars for all
+    for (const u of state.units){ const ud = UNIT_DEFS[u.type];
+      if (u.type !== 'warrior'){ ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.arc(u.x,u.y,ud.range,0,Math.PI*2); ctx.stroke(); }
+      if (u.type === 'archer')      drawTriangle(u.x, u.y, 13, ud.color);
+      else if (u.type === 'mage')   drawDiamond(u.x, u.y, 12, ud.color);
+      else if (u.type === 'catapult') drawRoundRect(u.x, u.y, 28, 18, 6, ud.color);
+      else if (u.type === 'warrior')  drawShield(u.x, u.y, 14, ud.color);
+
+      const maxHp = ud.hp || 60; const curHp = Math.max(0, u.hp ?? maxHp); const pct = curHp / maxHp;
+      ctx.fillStyle = '#111827'; ctx.fillRect(u.x-14, u.y-22, 28, 4);
+      ctx.fillStyle = '#10b981'; ctx.fillRect(u.x-14, u.y-22, 28*pct, 4);
+    }
+
+    // enemies with size by stats (slower/stronger → bigger)
+    for (const e of state.enemies){ const s = e.size || 26; const r = s/2;
+      ctx.fillStyle = e.color; ctx.fillRect(e.x - r, e.y - r, s, s);
+      const base = ENEMY_DEFS[e.type].hp * (1 + state.wave * 0.15); const pct = Math.max(0, e.hp) / Math.max(1, base);
+      ctx.fillStyle = '#111827'; ctx.fillRect(e.x - r, e.y - r - 6, s, 3.5); ctx.fillStyle = '#10b981'; ctx.fillRect(e.x - r, e.y - r - 6, s*pct, 3.5);
+    }
+
+    // projectiles
+    for (const p of state.projectiles){ ctx.beginPath(); ctx.fillStyle = p.color || '#f3f4f6'; ctx.arc(p.x,p.y,3.5,0,Math.PI*2); ctx.fill(); }
+
+    // placement ghost on top
+    if (state.placing && state.ghost){
+      const g = state.ghost; const def = UNIT_DEFS[state.placing];
+      if (state.placing !== 'warrior'){
+        ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.arc(g.x,g.y,def.range,0,Math.PI*2); ctx.stroke();
+      }
+      const ring = g.valid ? '#22c55e' : '#ef4444';
+      ctx.beginPath(); ctx.strokeStyle = ring; ctx.lineWidth = 2; ctx.arc(g.x,g.y,16,0,Math.PI*2); ctx.stroke();
+      ctx.globalAlpha = 0.7;
+      if (state.placing === 'archer')      drawTriangle(g.x, g.y, 13, def.color);
+      else if (state.placing === 'mage')   drawDiamond(g.x, g.y, 12, def.color);
+      else if (state.placing === 'catapult') drawRoundRect(g.x, g.y, 28, 18, 6, def.color);
+      else if (state.placing === 'warrior')  drawShield(g.x, g.y, 14, def.color);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  goldEl.textContent = state.gold; hpEl.textContent = state.castleHP; updateUI(); drawDeployIcon();
+  // --- Wave helpers (easier start, gradual ramp) ---
+  function getWaveParams(n){
+    // n is 1-based
+    // Much steeper ramp: more enemies, tougher, and slightly faster as waves climb
+    const baseCount = 4;                         // tiny Wave 1
+    const count = Math.round(baseCount + (n-1) * 2.3); // +2.3 enemies per wave
+
+    // Exponential-ish health and mild speed scale
+    const hpScale = Math.max(0.7, Math.pow(1.18, Math.max(0, n-1))); // ~+18%/wave after 1
+    const spdScale = Math.max(0.85, Math.pow(1.05, Math.max(0, n-1))); // ~+5%/wave after 1
+
+    // Spawn faster over time
+    const spacing = Math.max(0.25, 1.1 - (n-1) * 0.08);
+
+    // Composition shifts faster to tougher types
+    const gruntShare  = Math.max(0.45, 0.85 - (n-1)*0.05);
+    const runnerShare = Math.min(0.30, 0.10 + (n-1)*0.03);
+    const tankShare   = Math.min(0.35, 0.05 + (n-1)*0.04);
+    // Normalize in case of rounding
+    const sum = gruntShare + runnerShare + tankShare;
+    const mix = { grunt: gruntShare/sum, runner: runnerShare/sum, tank: tankShare/sum };
+
+    return { count, hpScale, spdScale, spacing, mix };
+  }
+  function pickEnemyType(mix){ const r = Math.random(); if (r < mix.grunt) return 'grunt'; if (r < mix.grunt + mix.runner) return 'runner'; return 'tank'; }
+
+  // Small icon on Deploy button shows the currently selected unit shape
+  function drawDeployIcon(){
+    const ic = deployIcon?.getContext('2d'); if (!ic) return; const w = deployIcon.width, h = deployIcon.height;
+    ic.clearRect(0,0,w,h); if (!state.placing) return; ic.save(); ic.translate(w/2, h/2);
+    const col = UNIT_DEFS[state.placing].color;
+    if (state.placing === 'archer'){ ic.beginPath(); ic.moveTo(0,-8); ic.lineTo(-7,6); ic.lineTo(7,6); ic.closePath(); ic.fillStyle = col; ic.fill(); }
+    else if (state.placing === 'mage'){ ic.beginPath(); ic.moveTo(0,-8); ic.lineTo(-8,0); ic.lineTo(0,8); ic.lineTo(8,0); ic.closePath(); ic.fillStyle = col; ic.fill(); }
+    else if (state.placing === 'catapult'){ ic.fillStyle = col; ic.fillRect(-10,-6,20,12); }
+    else if (state.placing === 'warrior'){ ic.beginPath(); ic.moveTo(0,-9); ic.quadraticCurveTo(9,-5,6,0); ic.quadraticCurveTo(0,12,-6,0); ic.quadraticCurveTo(-9,-5,0,-9); ic.fillStyle = col; ic.fill(); }
+    ic.restore();
+  }
+
+  </script>
 </body>
 </html>
